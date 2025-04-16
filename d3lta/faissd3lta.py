@@ -3,7 +3,6 @@ import os
 import re
 import time
 from typing import Union
-import demoji
 import faiss
 import fasttext
 from gensim.utils import deaccent
@@ -47,6 +46,46 @@ def grouper(iterable, n):
 #### Preprocessing Dataset ####
 ###############################
 
+# Unicode ranges for most emojis
+SYMBOL_REGEX = re.compile(
+    "["
+    "\U00002000-\U0000206F"  # General Punctuation
+    "\U00002190-\U000021FF"  # Arrows
+    "\U00002300-\U000023FF"  # Miscellaneous Technical
+    "\U00002400-\U0000243F"  # Control Pictures
+    "\U00002440-\U0000245F"  # Optical Character Recognition
+    "\U00002460-\U0000249F"  # Enclosed Alphanumerics
+    "\U000024B0-\U000024FF"  # Enclosed Alphanumerics Extension 
+    "\U00002500-\U0000257F"  # Box Drawing
+    "\U00002580-\U000025FF"  # Block Elements
+    "\U00002600-\U000026FF"  # Miscellaneous Symbols
+    "\U00002700-\U000027BF"  # Dingbats
+    "\U000027C0-\U000027EF"  # Miscellaneous Mathematical Symbols-A
+    "\U000027F0-\U000027FF"  # Supplemental Arrows-A
+    "\U00002800-\U000028FF"  # Braille Patterns
+    "\U00002900-\U0000297F"  # Supplemental Arrows-B
+    "\U00002980-\U000029FF"  # Miscellaneous Mathematical Symbols-B
+    "\U00002A00-\U00002AFF"  # Supplemental Mathematical Operators
+    "\U00002B00-\U00002BFF"  # Miscellaneous Symbols and Arrows
+    "\U00003200-\U0000325F"  # Enclosed CJK Letters and Months
+    "\U0001F300-\U0001F5FF"  # symbols & pictographs
+    "\U0001F600-\U0001F64F"  # emoticons
+    "\U0001F680-\U0001F6FF"  # transport & map symbols
+    "\U0001F700-\U0001F77F"  # alchemical symbols
+    "\U0001F780-\U0001F7FF"  # Geometric Shapes
+    "\U0001F800-\U0001F8FF"  # Supplemental Arrows-C
+    "\U0001F900-\U0001F9FF"  # Supplemental Symbols and Pictographs
+    "\U0001FA00-\U0001FA6F"  # Chess Symbols
+    "\U0001FA70-\U0001FAFF"  # Symbols and Pictographs Extended-A
+    "\U0001FB00-\U0001FBFF"  # Symbols for Legacy Computing
+    "\U0000200D"              # Zero Width Joiner (ZWJ)
+    "\U0000FE0F"              # Variation Selector-16 (emoji style)
+    "\U0000FE0E"              # Variation Selector-15 (text style)
+    "]+"
+)
+
+def remove_symbols(text):
+    return SYMBOL_REGEX.sub(r'', text)
 
 def preprocess_text(
     s,
@@ -68,7 +107,7 @@ def preprocess_text(
         remove_accents (bool, optional): deaccent the text. Defaults to True.
         remove_urls (bool, optional): remove urls from the text. Defaults to True.
         remove_mentions (bool, optional): remove mentions from the text. Defaults to True.
-        remove_emojis (bool, optional): remove emojis from the text. Defaults to True.
+        remove_emojis (bool, optional): remove emojis and other pictograms from the text. Defaults to True.
         remove_hashtags_frontend (bool, optional): remove leading and ending hashtags from the text. Defaults to False.
         remove_twitter_cropend (bool, optional): remove Twitter-added "…" character at the end of messages that are too long. Defaults to False.
         replace_newline_characters (bool, optional): replace two commonly found escape characters: \r and \n with '. '. Defaults to True.
@@ -104,7 +143,7 @@ def preprocess_text(
             for msg in s
         ]
     if remove_emojis:
-        s = [demoji.replace(msg, "").strip() for msg in s]
+        s = [remove_symbols(msg).strip() for msg in s]
 
     if remove_hashtags_frontend:
         if (not remove_urls) or (not remove_mentions):

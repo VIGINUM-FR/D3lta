@@ -30,7 +30,7 @@ def timeit(func):
         if total_time < 60:
             print(f"<<< End {func.__name__}, Took: {total_time:.4f} sec")
         else:
-            print(f"<<< End {func.__name__}, Took:{np.round((total_time)/60, 1)} min")
+            print(f"<<< End {func.__name__}, Took:{np.round((total_time) / 60, 1)} min")
         return result
 
     return timeit_wrapper
@@ -184,22 +184,22 @@ def prepare_dataset(dataset: Union[pd.Series, pd.DataFrame], min_size_txt: int =
     Returns:
         dataset (pd.DataFrame): The same input dataset with new columns added (text_grapheme, text_to_embed, text_language_detect), containing the preprocessed texts for 3 delta method.
     """
-    assert isinstance(
-        dataset, (pd.Series, pd.DataFrame)
-    ), "dataset must be a pd.Series or a pd.DataFrame"
+    assert isinstance(dataset, (pd.Series, pd.DataFrame)), (
+        "dataset must be a pd.Series or a pd.DataFrame"
+    )
 
-    assert dataset.index.nunique() == len(
-        dataset
-    ), "dataset must be indexed with unique indices"
+    assert dataset.index.nunique() == len(dataset), (
+        "dataset must be indexed with unique indices"
+    )
 
-    assert all(
-        [isinstance(i, str) for i in dataset.index]
-    ), "dataset indices must be `str`"
+    assert all([isinstance(i, str) for i in dataset.index]), (
+        "dataset indices must be `str`"
+    )
 
     if isinstance(dataset, pd.DataFrame):
-        assert (
-            "original" in dataset.columns
-        ), "when dataset is a pd.DataFrame, it must have a column named 'original'"
+        assert "original" in dataset.columns, (
+            "when dataset is a pd.DataFrame, it must have a column named 'original'"
+        )
 
     if isinstance(dataset, pd.Series):
         dataset = dataset.to_frame("original")
@@ -260,7 +260,7 @@ def prepare_dataset(dataset: Union[pd.Series, pd.DataFrame], min_size_txt: int =
 
     if min_size_txt is not None:
         print(
-            f'Removing {(dataset["text_grapheme"].str.len() < min_size_txt).sum()} short texts over {len(dataset)} sentences...'
+            f"Removing {(dataset['text_grapheme'].str.len() < min_size_txt).sum()} short texts over {len(dataset)} sentences..."
         )
         dataset = dataset.loc[dataset["text_grapheme"].str.len() >= min_size_txt]
         print("Done.")
@@ -285,9 +285,9 @@ def compute_language(
     Returns:
         dataset (pd.DataFrame): The same input dataset with column 'language' added containing the results of language detection.
     """
-    assert (
-        "text_language_detect" in dataset.columns
-    ), "you need to have a column text_language_detect to detect language"
+    assert "text_language_detect" in dataset.columns, (
+        "you need to have a column text_language_detect to detect language"
+    )
 
     if fasttext_model is None:
         if os.path.exists("lid.176.ftz"):
@@ -452,9 +452,9 @@ def find_matches(
 
 def similarity_levenshtein(pair):
     s1, s2 = pair
-    assert (
-        min(len(s1), len(s2)) > 0
-    ), "one text_grapheme is None and levenshtein can't be retrieved"
+    assert min(len(s1), len(s2)) > 0, (
+        "one text_grapheme is None and levenshtein can't be retrieved"
+    )
     return 1 - levenshtein(s1, s2) / max(len(s1), len(s2))
 
 

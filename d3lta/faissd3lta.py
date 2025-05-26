@@ -20,6 +20,8 @@ from polyleven import levenshtein
 from tqdm.auto import trange
 from tqdm.contrib.concurrent import thread_map
 
+from d3lta.emojis_remover import EmojisRemover, ExplicitUnicodeBlocksEmojisRemover
+
 
 def timeit(func):
     @wraps(func)
@@ -48,46 +50,6 @@ def grouper(iterable, n):
 #### Preprocessing Dataset ####
 ###############################
 
-# Unicode ranges for most emojis
-SYMBOL_REGEX = re.compile(
-    "["
-    "\U00002000-\U0000206F"  # General Punctuation
-    "\U00002190-\U000021FF"  # Arrows
-    "\U00002300-\U000023FF"  # Miscellaneous Technical
-    "\U00002400-\U0000243F"  # Control Pictures
-    "\U00002440-\U0000245F"  # Optical Character Recognition
-    "\U00002460-\U0000249F"  # Enclosed Alphanumerics
-    "\U000024B0-\U000024FF"  # Enclosed Alphanumerics Extension 
-    "\U00002500-\U0000257F"  # Box Drawing
-    "\U00002580-\U000025FF"  # Block Elements
-    "\U00002600-\U000026FF"  # Miscellaneous Symbols
-    "\U00002700-\U000027BF"  # Dingbats
-    "\U000027C0-\U000027EF"  # Miscellaneous Mathematical Symbols-A
-    "\U000027F0-\U000027FF"  # Supplemental Arrows-A
-    "\U00002800-\U000028FF"  # Braille Patterns
-    "\U00002900-\U0000297F"  # Supplemental Arrows-B
-    "\U00002980-\U000029FF"  # Miscellaneous Mathematical Symbols-B
-    "\U00002A00-\U00002AFF"  # Supplemental Mathematical Operators
-    "\U00002B00-\U00002BFF"  # Miscellaneous Symbols and Arrows
-    "\U00003200-\U0000325F"  # Enclosed CJK Letters and Months
-    "\U0001F300-\U0001F5FF"  # symbols & pictographs
-    "\U0001F600-\U0001F64F"  # emoticons
-    "\U0001F680-\U0001F6FF"  # transport & map symbols
-    "\U0001F700-\U0001F77F"  # alchemical symbols
-    "\U0001F780-\U0001F7FF"  # Geometric Shapes
-    "\U0001F800-\U0001F8FF"  # Supplemental Arrows-C
-    "\U0001F900-\U0001F9FF"  # Supplemental Symbols and Pictographs
-    "\U0001FA00-\U0001FA6F"  # Chess Symbols
-    "\U0001FA70-\U0001FAFF"  # Symbols and Pictographs Extended-A
-    "\U0001FB00-\U0001FBFF"  # Symbols for Legacy Computing
-    "\U0000200D"              # Zero Width Joiner (ZWJ)
-    "\U0000FE0F"              # Variation Selector-16 (emoji style)
-    "\U0000FE0E"              # Variation Selector-15 (text style)
-    "]+"
-)
-
-def remove_symbols(text):
-    return SYMBOL_REGEX.sub(r'', text)
 
 def preprocess_text(
     s: str | list[str] | set[str] | frozenset[str] | pd.Series,
@@ -100,6 +62,7 @@ def preprocess_text(
     remove_twitter_cropend: bool = False,
     replace_newline_characters: bool = True,
     remove_punctuation: bool = False,
+    emojis_remover: EmojisRemover | None = None,
 ):
     """
     clean a list-like of strings, performing all the following treatments by default
@@ -114,9 +77,15 @@ def preprocess_text(
         remove_twitter_cropend (bool, optional): remove Twitter-added "…" character at the end of messages that are too long. Defaults to False.
         replace_newline_characters (bool, optional): replace two commonly found escape characters: \r and \n with '. '. Defaults to True.
         remove_punctuation (bool, optional): remove punctuation from the text, be careful, it will remove # of hashtags too. Defaults to False.
+        emojis_remover (EmojisRemover, optional):
+            if provided, overrides the default engine used for emojis matching and removal.
+            Has no effect if `remove_emojis` is set to False.
     """
     if s is None:
         s = ""
+
+    if emojis_remover is None:
+        emojis_remover = ExplicitUnicodeBlocksEmojisRemover()
 
     assert isinstance(s, (str, list, pd.Series, set, frozenset))
 
@@ -145,7 +114,7 @@ def preprocess_text(
             for msg in s
         ]
     if remove_emojis:
-        s = [remove_symbols(msg).strip() for msg in s]
+        s = [emojis_remover.remove_symbols(msg).strip() for msg in s]
 
     if remove_hashtags_frontend:
         if (not remove_urls) or (not remove_mentions):

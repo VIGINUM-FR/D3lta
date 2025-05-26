@@ -90,16 +90,16 @@ def remove_symbols(text):
     return SYMBOL_REGEX.sub(r'', text)
 
 def preprocess_text(
-    s,
-    lower=True,
-    remove_accents=True,
-    remove_urls=True,
-    remove_mentions=True,
-    remove_emojis=True,
-    remove_hashtags_frontend=False,
-    remove_twitter_cropend=False,
-    replace_newline_characters=True,
-    remove_punctuation=False,
+    s: str | list[str] | set[str] | frozenset[str] | pd.Series,
+    lower: bool = True,
+    remove_accents: bool = True,
+    remove_urls: bool = True,
+    remove_mentions: bool = True,
+    remove_emojis: bool = True,
+    remove_hashtags_frontend: bool = False,
+    remove_twitter_cropend: bool = False,
+    replace_newline_characters: bool = True,
+    remove_punctuation: bool = False,
 ):
     """
     clean a list-like of strings, performing all the following treatments by default

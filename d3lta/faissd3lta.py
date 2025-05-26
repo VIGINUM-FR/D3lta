@@ -1,22 +1,24 @@
-from functools import wraps
 import os
 import re
 import time
+from functools import wraps
 from typing import Union
+
 import faiss
 import fasttext
-from gensim.utils import deaccent
 import networkx as nx
 import numpy as np
 import pandas as pd
-from polyleven import levenshtein
 import requests
 import tensorflow as tf
 import tensorflow_hub as hub
-import tensorflow_text
-from tqdm.contrib.concurrent import thread_map
+
+# import `tensorflow_text` ensures that some ops required by the USE model are available at runtime
+import tensorflow_text  # noqa: F401 # pylint: disable=unused-import
+from gensim.utils import deaccent
+from polyleven import levenshtein
 from tqdm.auto import trange
-import networkx as nx
+from tqdm.contrib.concurrent import thread_map
 
 
 def timeit(func):

@@ -20,6 +20,13 @@ tensorflow-hub = "0.16.1"
 tensorflow-text = "2.18.1"
 tqdm = "4.67.1"
 
+[tool.poetry.group.dev]
+optional = true
+
+[tool.poetry.group.dev.dependencies]
+pytest = "^8.3.5"
+pytest-benchmark = "^5.1.0"
+
 [build-system]
-requires = ["setuptools","poetry-core"]
+requires = ["setuptools", "poetry-core"]
 build-backend = "poetry.core.masonry.api"

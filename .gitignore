@@ -228,3 +228,4 @@ pyrightconfig.json
 *.ftz
 use_model_kaggle/
 include/
+.benchmarks

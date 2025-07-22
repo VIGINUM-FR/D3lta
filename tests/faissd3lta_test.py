@@ -1,6 +1,4 @@
-import os
 import re
-import sys
 
 import pandas as pd
 import pytest
@@ -26,13 +24,13 @@ def examples_dataset():
     ]
 
 
-def test_compute_language(examples_dataset):
+def test_compute_language(examples_dataset: list[str]):
     df_language = pd.DataFrame(examples_dataset, columns=["text_language_detect"])
     df_language = compute_language(df_language)
     assert list(df_language["language"]) == ["fr", "fr", "fr", "en", "en", "fr"]
 
 
-def test_embedding_similarity(examples_dataset):
+def test_embedding_similarity(examples_dataset: list[str]):
     df_test = pd.DataFrame(
         examples_dataset,
         columns=["text_to_embed"],
@@ -54,7 +52,7 @@ def test_embedding_similarity(examples_dataset):
     )
 
 
-def test_semantic_faiss(examples_dataset):
+def test_semantic_faiss(examples_dataset: list[str]):
     df = pd.DataFrame(examples_dataset, columns=["text_language_detect"])
     df = compute_language(df)
     df_emb = compute_embeddings(

@@ -4,8 +4,30 @@ name: Publish Python 🐍 distribution 📦 to PyPI and TestPyPI
 on: push
 
 jobs:
+  unit-test:
+    name: Run unit tests 🤾
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        persist-credentials: false
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: "3.11"
+    - name: Install dependencies
+      run: |
+        pip install poetry
+        poetry install --with dev 
+    - name: Build a binary wheel and a source tarball
+      run: 
+        poetry run pytest
+
   build:
     name: Build distribution 📦
+    needs:
+    - unit-test
     runs-on: ubuntu-latest
 
     steps:

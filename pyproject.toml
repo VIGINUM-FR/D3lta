@@ -1,13 +1,13 @@
 [tool.poetry]
 name = "d3lta"
-version = "1.0.0"
+version = "1.0.0.post2"
 description = "A library for detecting verbatim-duplicated contents within a vast amount of documents"
 readme = "README.md"
 authors = ["Viginum"]
 
 [tool.poetry.dependencies]
 python = "^3.10"
-demoji = "1.1.0"
+demoji = "^1.1.0"
 faiss-cpu = "1.9.0.post1"
 fasttext = "0.9.3"
 gensim = "4.3.3"
@@ -20,6 +20,13 @@ tensorflow-hub = "0.16.1"
 tensorflow-text = "2.18.1"
 tqdm = "4.67.1"
 
+[tool.poetry.group.dev]
+optional = true
+
+[tool.poetry.group.dev.dependencies]
+pytest = "^8.3.5"
+pytest-benchmark = "^5.1.0"
+
 [build-system]
-requires = ["setuptools","poetry-core"]
+requires = ["setuptools", "poetry-core"]
 build-backend = "poetry.core.masonry.api"

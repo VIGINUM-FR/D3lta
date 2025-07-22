@@ -1,23 +1,26 @@
-from functools import wraps
 import os
 import re
 import time
+from functools import wraps
 from typing import Union
-import demoji
+
 import faiss
 import fasttext
-from gensim.utils import deaccent
 import networkx as nx
 import numpy as np
 import pandas as pd
-from polyleven import levenshtein
 import requests
 import tensorflow as tf
 import tensorflow_hub as hub
-import tensorflow_text
-from tqdm.contrib.concurrent import thread_map
+
+# import `tensorflow_text` ensures that some ops required by the USE model are available at runtime
+import tensorflow_text  # noqa: F401 # pylint: disable=unused-import
+from gensim.utils import deaccent
+from polyleven import levenshtein
 from tqdm.auto import trange
-import networkx as nx
+from tqdm.contrib.concurrent import thread_map
+
+from d3lta.emojis_remover import EmojisRemover, ExplicitUnicodeBlocksEmojisRemover
 
 
 def timeit(func):
@@ -31,7 +34,7 @@ def timeit(func):
         if total_time < 60:
             print(f"<<< End {func.__name__}, Took: {total_time:.4f} sec")
         else:
-            print(f"<<< End {func.__name__}, Took:{np.round((total_time)/60, 1)} min")
+            print(f"<<< End {func.__name__}, Took:{np.round((total_time) / 60, 1)} min")
         return result
 
     return timeit_wrapper
@@ -49,16 +52,17 @@ def grouper(iterable, n):
 
 
 def preprocess_text(
-    s,
-    lower=True,
-    remove_accents=True,
-    remove_urls=True,
-    remove_mentions=True,
-    remove_emojis=True,
-    remove_hashtags_frontend=False,
-    remove_twitter_cropend=False,
-    replace_newline_characters=True,
-    remove_punctuation=False,
+    s: str | list[str] | set[str] | frozenset[str] | pd.Series,
+    lower: bool = True,
+    remove_accents: bool = True,
+    remove_urls: bool = True,
+    remove_mentions: bool = True,
+    remove_emojis: bool = True,
+    remove_hashtags_frontend: bool = False,
+    remove_twitter_cropend: bool = False,
+    replace_newline_characters: bool = True,
+    remove_punctuation: bool = False,
+    emojis_remover: EmojisRemover | None = None,
 ):
     """
     clean a list-like of strings, performing all the following treatments by default
@@ -68,14 +72,20 @@ def preprocess_text(
         remove_accents (bool, optional): deaccent the text. Defaults to True.
         remove_urls (bool, optional): remove urls from the text. Defaults to True.
         remove_mentions (bool, optional): remove mentions from the text. Defaults to True.
-        remove_emojis (bool, optional): remove emojis from the text. Defaults to True.
+        remove_emojis (bool, optional): remove emojis and other pictograms from the text. Defaults to True.
         remove_hashtags_frontend (bool, optional): remove leading and ending hashtags from the text. Defaults to False.
         remove_twitter_cropend (bool, optional): remove Twitter-added "…" character at the end of messages that are too long. Defaults to False.
         replace_newline_characters (bool, optional): replace two commonly found escape characters: \r and \n with '. '. Defaults to True.
         remove_punctuation (bool, optional): remove punctuation from the text, be careful, it will remove # of hashtags too. Defaults to False.
+        emojis_remover (EmojisRemover, optional):
+            if provided, overrides the default engine used for emojis matching and removal.
+            Has no effect if `remove_emojis` is set to False.
     """
     if s is None:
         s = ""
+
+    if emojis_remover is None:
+        emojis_remover = ExplicitUnicodeBlocksEmojisRemover()
 
     assert isinstance(s, (str, list, pd.Series, set, frozenset))
 
@@ -104,7 +114,7 @@ def preprocess_text(
             for msg in s
         ]
     if remove_emojis:
-        s = [demoji.replace(msg, "").strip() for msg in s]
+        s = [emojis_remover.remove_symbols(msg).strip() for msg in s]
 
     if remove_hashtags_frontend:
         if (not remove_urls) or (not remove_mentions):
@@ -145,22 +155,22 @@ def prepare_dataset(dataset: Union[pd.Series, pd.DataFrame], min_size_txt: int =
     Returns:
         dataset (pd.DataFrame): The same input dataset with new columns added (text_grapheme, text_to_embed, text_language_detect), containing the preprocessed texts for 3 delta method.
     """
-    assert isinstance(
-        dataset, (pd.Series, pd.DataFrame)
-    ), "dataset must be a pd.Series or a pd.DataFrame"
+    assert isinstance(dataset, (pd.Series, pd.DataFrame)), (
+        "dataset must be a pd.Series or a pd.DataFrame"
+    )
 
-    assert dataset.index.nunique() == len(
-        dataset
-    ), "dataset must be indexed with unique indices"
+    assert dataset.index.nunique() == len(dataset), (
+        "dataset must be indexed with unique indices"
+    )
 
-    assert all(
-        [isinstance(i, str) for i in dataset.index]
-    ), "dataset indices must be `str`"
+    assert all([isinstance(i, str) for i in dataset.index]), (
+        "dataset indices must be `str`"
+    )
 
     if isinstance(dataset, pd.DataFrame):
-        assert (
-            "original" in dataset.columns
-        ), "when dataset is a pd.DataFrame, it must have a column named 'original'"
+        assert "original" in dataset.columns, (
+            "when dataset is a pd.DataFrame, it must have a column named 'original'"
+        )
 
     if isinstance(dataset, pd.Series):
         dataset = dataset.to_frame("original")
@@ -221,7 +231,7 @@ def prepare_dataset(dataset: Union[pd.Series, pd.DataFrame], min_size_txt: int =
 
     if min_size_txt is not None:
         print(
-            f'Removing {(dataset["text_grapheme"].str.len() < min_size_txt).sum()} short texts over {len(dataset)} sentences...'
+            f"Removing {(dataset['text_grapheme'].str.len() < min_size_txt).sum()} short texts over {len(dataset)} sentences..."
         )
         dataset = dataset.loc[dataset["text_grapheme"].str.len() >= min_size_txt]
         print("Done.")
@@ -246,9 +256,9 @@ def compute_language(
     Returns:
         dataset (pd.DataFrame): The same input dataset with column 'language' added containing the results of language detection.
     """
-    assert (
-        "text_language_detect" in dataset.columns
-    ), "you need to have a column text_language_detect to detect language"
+    assert "text_language_detect" in dataset.columns, (
+        "you need to have a column text_language_detect to detect language"
+    )
 
     if fasttext_model is None:
         if os.path.exists("lid.176.ftz"):
@@ -413,9 +423,9 @@ def find_matches(
 
 def similarity_levenshtein(pair):
     s1, s2 = pair
-    assert (
-        min(len(s1), len(s2)) > 0
-    ), "one text_grapheme is None and levenshtein can't be retrieved"
+    assert min(len(s1), len(s2)) > 0, (
+        "one text_grapheme is None and levenshtein can't be retrieved"
+    )
     return 1 - levenshtein(s1, s2) / max(len(s1), len(s2))
 
 

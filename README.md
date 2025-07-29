@@ -7,8 +7,9 @@ If you like our project, please give us a star ⭐ on GitHub for the latest upda
 </h5>
 
 <div align=center>
-  
-[![arXiv](https://img.shields.io/badge/Arxiv-2312.17338-b31b1b.svg?logo=arXiv)](https://arxiv.org/abs/2312.17338) 
+
+[![PyPI - Version](https://img.shields.io/pypi/v/d3lta?style=flat&logo=pypi&logoColor=%233775A9&label=PyPI)](https://pypi.org/project/d3lta/)
+[![arXiv](https://img.shields.io/badge/Arxiv-2312.17338-b31b1b.svg?logo=arXiv)](https://arxiv.org/abs/2312.17338)
 
 This repository is the official implementation of D3lta, a library for detecting duplicate verbatim contents within a vast amount of documents.
 

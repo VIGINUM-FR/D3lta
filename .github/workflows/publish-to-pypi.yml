@@ -1,59 +1,68 @@
 # derived from https://packaging.python.org/en/latest/guides/publishing-package-distribution-releases-using-github-actions-ci-cd-workflows/#the-whole-ci-cd-workflow
 name: Publish Python distribution to PyPI
 
-on: push
+on:
+  release:
+    types: [published]
 
 jobs:
-  unit-test:
-    name: Run unit tests
-    runs-on: ubuntu-latest
-
-    steps:
-    - uses: actions/checkout@v4
-      with:
-        persist-credentials: false
-    - name: Set up Python
-      uses: actions/setup-python@v5
-      with:
-        python-version: "3.11"
-    - name: Install dependencies
-      run: |
-        pip install poetry
-        poetry install --with dev 
-    - name: Build a binary wheel and a source tarball
-      run: 
-        poetry run pytest
-
   build:
     name: Build distribution
-    needs: unit-test
     runs-on: ubuntu-latest
 
     steps:
     - uses: actions/checkout@v4
       with:
         persist-credentials: false
+    
     - name: Set up Python
       uses: actions/setup-python@v5
       with:
         python-version: "3.x"
+    
     - name: Install pypa/build
       run: >-
         python3 -m
         pip install
         build
         --user
+    
     - name: Build a binary wheel and a source tarball
       run: python3 -m build
+
     - name: Store the distribution packages
       uses: actions/upload-artifact@v4
       with:
         name: python-package-distributions
         path: dist/
+        if-no-files-found: error
+
+  # taken from https://github.com/python-poetry/poetry/blob/b580e8aa4fbce53569420e7b42568dfd9e73519f/.github/workflows/release.yaml 
+  upload-built-distribution-to-github-release:
+    name: Upload (GitHub)
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    needs: build
+    steps:
+      # Checking-out the project since the gh CLI expects to be called in the context of a git repository.
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: Retrieve built distribution
+        uses: actions/download-artifact@v4
+        with:
+          name: distfiles
+          path: dist/
+
+      - run: gh release upload "${TAG_NAME}" dist/*.{tar.gz,whl}
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG_NAME: ${{ github.event.release.tag_name }}
 
   publish-to-pypi:
     name: Publish Python distribution to PyPI
-    if: startsWith(github.ref, 'refs/tags/')  # only publish to PyPI on tag pushes
     needs: build
     runs-on: ubuntu-latest
     environment:
@@ -63,53 +72,13 @@ jobs:
       id-token: write  # IMPORTANT: mandatory for trusted publishing
 
     steps:
-    - name: Download all the dists
-      uses: actions/download-artifact@v4
-      with:
-        name: python-package-distributions
-        path: dist/
-    
-    - name: Publish distribution to PyPI
-      uses: pypa/gh-action-pypi-publish@release/v1
+      - name: Retrieve built distribution
+        uses: actions/download-artifact@v4
+        with:
+          name: distfiles
+          path: dist/
 
-  github-release:
-    name: >-
-      Sign the Python distribution with Sigstore
-      and upload them to GitHub Release
-    needs: publish-to-pypi
-    runs-on: ubuntu-latest
-
-    permissions:
-      contents: write  # IMPORTANT: mandatory for making GitHub Releases
-      id-token: write  # IMPORTANT: mandatory for sigstore
-
-    steps:
-    - name: Download all the dists
-      uses: actions/download-artifact@v4
-      with:
-        name: python-package-distributions
-        path: dist/
-    - name: Sign the dists with Sigstore
-      uses: sigstore/gh-action-sigstore-python@v3.0.0
-      with:
-        inputs: >-
-          ./dist/*.tar.gz
-          ./dist/*.whl
-    - name: Create GitHub Release
-      env:
-        GITHUB_TOKEN: ${{ github.token }}
-      run: >-
-        gh release create
-        "$GITHUB_REF_NAME"
-        --repo "$GITHUB_REPOSITORY"
-        --notes ""
-    - name: Upload artifact signatures to GitHub Release
-      env:
-        GITHUB_TOKEN: ${{ github.token }}
-      # Upload to GitHub Release using the `gh` CLI.
-      # `dist/` contains the built packages, and the
-      # sigstore-produced signatures and certificates.
-      run: >-
-        gh release upload
-        "$GITHUB_REF_NAME" dist/**
-        --repo "$GITHUB_REPOSITORY"
+      - name: Publish distribution to PyPI
+        uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          print-hash: true

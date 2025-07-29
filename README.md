@@ -1,12 +1,4 @@
-<h2 align="center"> <a href="https://arxiv.org/abs/2312.17338">D3lta</a></h2>
-
-<h5 align="center"> 
-
-If you like our project, please give us a star ⭐ on GitHub for the latest update.  </h2>
-
-</h5>
-
-<div align=center>
+# D3lta
 
 [![PyPI - Version](https://img.shields.io/pypi/v/d3lta?style=flat&logo=pypi&logoColor=%233775A9&label=PyPI)](https://pypi.org/project/d3lta/)
 [![arXiv](https://img.shields.io/badge/Arxiv-2312.17338-b31b1b.svg?logo=arXiv)](https://arxiv.org/abs/2312.17338)
@@ -14,7 +6,6 @@ If you like our project, please give us a star ⭐ on GitHub for the latest upda
 This repository is the official implementation of D3lta, a library for detecting duplicate verbatim contents within a vast amount of documents.
 
 It distinguishes 3 types of duplicate contents : copypasta (almost exact duplicates), rewording and translation. You can run it on CPU.
-</div>
 
 ---
 

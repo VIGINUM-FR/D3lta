@@ -155,11 +155,10 @@ matches, df_clusters = semantic_faiss(
 matches
 ```
 
-
-
 ## 📚 Synthetic dataset
 
-The dataset is available in the release `1.0.0`. It contains the following files:
+The dataset is available in the [`1.0.0` release](https://github.com/VIGINUM-FR/D3lta/releases/tag/1.0.0).
+It contains the following files:
 
 ### `synthetic_dataset_documents.csv`:
 
@@ -197,8 +196,8 @@ Column details:
 
 ## Notebooks
 
-In folder the [`notebooks`](./notebooks/), you can find: 
-- [`example_synthetic_dataset.ipynb`](./notebooks/example_synthetic_dataset.ipynb): Example of applying threedelta methodology to the synthetic dataset, with a comparison to the true labels.
+In the [`notebooks`](./notebooks/) directory, you can find: 
+- [`example_synthetic_dataset.ipynb`](./notebooks/example_synthetic_dataset.ipynb): example of applying the D3lta methodology to the synthetic dataset, with a comparison to the true labels.
 
 
 ## Citation

@@ -33,7 +33,7 @@ jobs:
     - name: Store the distribution packages
       uses: actions/upload-artifact@v4
       with:
-        name: python-package-distributions
+        name: distfiles
         path: dist/
         if-no-files-found: error
 

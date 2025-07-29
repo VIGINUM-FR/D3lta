@@ -12,24 +12,11 @@ It distinguishes 3 types of duplicate contents : copypasta (almost exact duplica
 <img style="display: block; margin: auto;" src="https://github.com/VIGINUM-FR/D3lta/raw/main/static/graph.gif"/>
 
 
-## 💻 Installing 
-
-Clone the repository
+## 💻 Installation
 
 ```bash
-git clone https://github.com/VIGINUM-FR/D3lta
-```
-
-Navigate to the project
-
-```bash
-cd D3lta
-```
-
-Install the package
-
-```bash
-pip install -e .
+# PyPI is case insensitive, so d3lta == D3lta
+pip install d3lta
 ```
 
 ## 🚀 Quick start
@@ -199,6 +186,26 @@ Column details:
 In the [`notebooks`](./notebooks/) directory, you can find: 
 - [`example_synthetic_dataset.ipynb`](./notebooks/example_synthetic_dataset.ipynb): example of applying the D3lta methodology to the synthetic dataset, with a comparison to the true labels.
 
+
+## 👩‍💻 Developing
+
+Clone the repository
+
+```bash
+git clone https://github.com/VIGINUM-FR/D3lta
+```
+
+Navigate to the project
+
+```bash
+cd D3lta
+```
+
+Install the package
+
+```bash
+pip install -e .
+```
 
 ## Citation
 

@@ -7,7 +7,6 @@ authors = ["Viginum"]
 
 [tool.poetry.dependencies]
 python = "^3.10"
-demoji = "^1.1.0"
 faiss-cpu = "1.9.0.post1"
 fasttext = "0.9.3"
 gensim = "4.3.3"
@@ -25,7 +24,6 @@ optional = true
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^8.3.5"
-pytest-benchmark = "^5.1.0"
 
 [build-system]
 requires = ["setuptools", "poetry-core"]

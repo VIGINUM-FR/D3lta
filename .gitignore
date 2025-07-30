@@ -229,3 +229,4 @@ pyrightconfig.json
 use_model_kaggle/
 include/
 .benchmarks
+.act-event.json

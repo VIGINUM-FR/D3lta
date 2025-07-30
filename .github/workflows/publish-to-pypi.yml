@@ -16,12 +16,12 @@ jobs:
     - uses: actions/checkout@v4
       with:
         persist-credentials: false
-    
+
     - name: Set up Python
       uses: actions/setup-python@v5
       with:
         python-version: "3.x"
-    
+
     - name: Build a binary wheel and a source tarball
       run: pipx run build
 
@@ -32,7 +32,7 @@ jobs:
         path: dist/
         if-no-files-found: error
 
-  # taken from https://github.com/python-poetry/poetry/blob/b580e8aa4fbce53569420e7b42568dfd9e73519f/.github/workflows/release.yaml 
+  # taken from https://github.com/python-poetry/poetry/blob/b580e8aa4fbce53569420e7b42568dfd9e73519f/.github/workflows/release.yaml
   upload-built-distribution-to-github-release:
     name: Upload (GitHub)
     runs-on: ubuntu-latest

@@ -6,9 +6,6 @@ from get_unicode_emojis_list import (
     EMOJI_TESTFILE_FILENAME,
     get_all_emojis_from_latest_unicode_emojis_specification_with_download,
 )
-from pytest_benchmark.fixture import (
-    BenchmarkFixture,
-)
 
 import d3lta.emojis_remover
 
@@ -17,13 +14,6 @@ import d3lta.emojis_remover
     name="emojis_remover",
     params=[
         d3lta.emojis_remover.ExplicitUnicodeBlocksEmojisRemover,
-        pytest.param(
-            d3lta.emojis_remover.DemojiEmojisRemover,
-            marks=pytest.mark.xfail(
-                reason="`demoji`'s detection engine does not detect all emojis in the Unicode specification",
-                strict=True,
-            ),
-        ),
     ],
 )
 def fixture_emojis_remover(
@@ -108,11 +98,8 @@ In consequence whereof, the National 🏞️  Assembly 👩‍🏭👨‍🏭  r
 def test_on_text_sample(
     emojis_remover: d3lta.emojis_remover.EmojisRemover,
     sample_text_with_emojipasta: str,
-    sample_text: str,
-    benchmark: BenchmarkFixture,
+    sample_text: str
 ):
-    processed = benchmark(
-        emojis_remover.remove_symbols,
+    assert emojis_remover.remove_symbols(
         sample_text_with_emojipasta,
-    )
-    assert processed == sample_text
+    ) == sample_text

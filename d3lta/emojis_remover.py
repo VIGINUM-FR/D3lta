@@ -3,8 +3,6 @@ from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from typing import final
 
-import demoji
-
 
 @dataclass
 class EmojisRemover(ABC):
@@ -96,8 +94,3 @@ class ExplicitUnicodeBlocksEmojisRemover(EmojisRemover):
 
     def _remove_symbols_implementation(self, text: str) -> str:
         return self.SYMBOLS_REGEX.sub(r"", text)
-
-
-class DemojiEmojisRemover(EmojisRemover):
-    def _remove_symbols_implementation(self, text: str) -> str:
-        return demoji.replace(text)

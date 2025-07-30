@@ -8,6 +8,8 @@ on:
 jobs:
   build:
     name: Build distribution
+    # based on https://stackoverflow.com/a/74318141
+    if: ${{ github.event.release.target_commitish == 'main'}}
     runs-on: ubuntu-latest
 
     steps:

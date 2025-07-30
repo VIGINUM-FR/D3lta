@@ -4,6 +4,13 @@
 	"name": "Python 3",
 	"dockerFile": "./Dockerfile",
 	"context": "..",
+	"customizations": {
+		"vscode": {
+			"extensions": [
+				"github.vscode-github-actions"
+			]
+		}
+	},
 	// Features to add to the dev container. More info: https://containers.dev/features.
 	// "features": {}
 }

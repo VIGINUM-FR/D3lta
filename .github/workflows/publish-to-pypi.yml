@@ -5,6 +5,9 @@ on:
   release:
     types: [published]
 
+env:
+  ACT: false  # env.ACT == true when running inside nektos/act
+
 jobs:
   build:
     name: Build distribution
@@ -52,6 +55,8 @@ jobs:
           path: dist/
 
       - run: gh release upload "${TAG_NAME}" dist/*.{tar.gz,whl}
+        # skip step when debugging locally via nektos/act
+        if: ${{ !env.ACT }}
         env:
           GH_TOKEN: ${{ github.token }}
           TAG_NAME: ${{ github.event.release.tag_name }}
@@ -74,6 +79,8 @@ jobs:
           path: dist/
 
       - name: Publish distribution to PyPI
+        # skip step when debugging locally via nektos/act
+        if: ${{ !env.ACT }}
         uses: pypa/gh-action-pypi-publish@release/v1
         with:
           print-hash: true

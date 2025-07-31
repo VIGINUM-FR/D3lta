@@ -26,5 +26,5 @@ optional = true
 pytest = "^8.3.5"
 
 [build-system]
-requires = ["setuptools", "poetry-core"]
+requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"

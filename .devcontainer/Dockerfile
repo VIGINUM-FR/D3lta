@@ -17,7 +17,7 @@ RUN pip install --no-cache-dir --upgrade pip
 RUN pipx install poetry==${POETRY_VERSION}
 
 WORKDIR /app
-COPY pyproject.toml poetry.lock setup.py README.md ./
+COPY pyproject.toml poetry.lock README.md LICENSE.txt ./
 # pre-install dependencies
 RUN --mount=type=cache,target=/root/.cache poetry install --no-root
 
